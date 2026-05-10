@@ -23,19 +23,19 @@ type CompileRequest = {
 
 type CompileResponse =
 	| {
-			type: 'compile-result';
-			id: string;
-			ok: true;
-			pdf: ArrayBuffer;
-			diagnostics: string[];
-	  }
+		type: 'compile-result';
+		id: string;
+		ok: true;
+		pdf: ArrayBuffer;
+		diagnostics: string[];
+	}
 	| {
-			type: 'compile-result';
-			id: string;
-			ok: false;
-			error: string;
-			diagnostics: string[];
-	  };
+		type: 'compile-result';
+		id: string;
+		ok: false;
+		error: string;
+		diagnostics: string[];
+	};
 
 // ============================================================================
 // Configuration
@@ -44,12 +44,12 @@ type CompileResponse =
 // OPTION 1: Load from CDN (jsdelivr)
 // Pros: No local storage needed, always up-to-date, shared cache across sites
 // Cons: Requires internet connection, slower initial load, external dependency
-/*
+
 const TYPST_VERSION = '0.7.0-rc2';
 const TYPST_WASM_URL = `https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@${TYPST_VERSION}/pkg/typst_ts_web_compiler_bg.wasm`;
 
 const CORE_FONTS: string[] = [
-	https://cdn.jsdelivr.net/gh/typst/typst-dev-assets@v0.13.1/files/fonts/IBMPlexSans-Regular.ttf',
+	'https://cdn.jsdelivr.net/gh/typst/typst-dev-assets@v0.13.1/files/fonts/IBMPlexSans-Regular.ttf',
 	'https://cdn.jsdelivr.net/gh/typst/typst-dev-assets@v0.13.1/files/fonts/IBMPlexSans-Bold.ttf',
 	'https://cdn.jsdelivr.net/gh/typst/typst-assets@v0.13.1/files/fonts/NewCMMath-Regular.otf',
 	'https://cdn.jsdelivr.net/gh/typst/typst-assets@v0.13.1/files/fonts/NewCMMath-Book.otf'
@@ -63,7 +63,7 @@ const CJK_FONTS: string[] = [
 	'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf',
 	'https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Bold.otf'
 ];
-*/
+
 
 // OPTION 2: Load from local public folder (CURRENT - Recommended for offline use)
 // Pros: Faster loading, works offline, no external dependencies, predictable performance
@@ -71,29 +71,29 @@ const CJK_FONTS: string[] = [
 
 
 // const TYPST_WASM_URL = '/wasm/typst_ts_web_compiler_bg.wasm'; (Same shit but the below line is in case you also export to a static site)
-const TYPST_WASM_URL = `${import.meta.env.BASE_URL}wasm/typst_ts_web_compiler_bg.wasm`;
+// const TYPST_WASM_URL = `${import.meta.env.BASE_URL}wasm/typst_ts_web_compiler_bg.wasm`;
 
 
-const CORE_FONTS: string[] = [
-	// IBM Plex Sans (Modern UI fonts)
-	'/fonts/IBMPlexSans-Regular.ttf',
-	'/fonts/IBMPlexSans-Bold.ttf',
-	// Math fonts (Critical for mathematical formulas)
-	'/fonts/NewCMMath-Regular.otf',
-	'/fonts/NewCMMath-Book.otf'
-];
+// const CORE_FONTS: string[] = [
+// 	// IBM Plex Sans (Modern UI fonts)
+// 	'/fonts/IBMPlexSans-Regular.ttf',
+// 	'/fonts/IBMPlexSans-Bold.ttf',
+// 	// Math fonts (Critical for mathematical formulas)
+// 	'/fonts/NewCMMath-Regular.otf',
+// 	'/fonts/NewCMMath-Book.otf'
+// ];
 
-const EMOJI_FONTS: string[] = [
-	// Emoji support (Noto Color Emoji ~9MB) - Loaded on demand
-	'/fonts/NotoColorEmoji.ttf'
-];
+// const EMOJI_FONTS: string[] = [
+// 	// Emoji support (Noto Color Emoji ~9MB) - Loaded on demand
+// 	'/fonts/NotoColorEmoji.ttf'
+// ];
 
-const CJK_FONTS: string[] = [
-	// CJK (Chinese/Japanese/Korean) fonts - Loaded on demand
-	// Note: These are large files (~15-20MB each)
-	'/fonts/NotoSansCJKsc-Regular.otf',
-	'/fonts/NotoSansCJKsc-Bold.otf'
-];
+// const CJK_FONTS: string[] = [
+// 	// CJK (Chinese/Japanese/Korean) fonts - Loaded on demand
+// 	// Note: These are large files (~15-20MB each)
+// 	'/fonts/NotoSansCJKsc-Regular.otf',
+// 	'/fonts/NotoSansCJKsc-Bold.otf'
+// ];
 
 // ============================================================================
 // State Management
@@ -189,8 +189,8 @@ function getCurrentFonts(): string[] {
  * Detects custom font files in the images/fonts collection
  */
 function detectCustomFonts(images: Record<string, Uint8Array<ArrayBuffer>>): string[] {
-	return Object.keys(images).filter(path => 
-		path.toLowerCase().endsWith('.ttf') || 
+	return Object.keys(images).filter(path =>
+		path.toLowerCase().endsWith('.ttf') ||
 		path.toLowerCase().endsWith('.otf')
 	);
 }
@@ -201,14 +201,14 @@ function detectCustomFonts(images: Record<string, Uint8Array<ArrayBuffer>>): str
 function fontDataToUrl(data: Uint8Array<ArrayBuffer>, filename: string): string {
 	const extension = filename.toLowerCase().split('.').pop();
 	const mimeType = extension === 'ttf' ? 'font/ttf' : 'font/otf';
-	
+
 	// Convert Uint8Array to base64
 	let binary = '';
 	for (let i = 0; i < data.length; i++) {
 		binary += String.fromCharCode(data[i]);
 	}
 	const base64 = btoa(binary);
-	
+
 	return `data:${mimeType};base64,${base64}`;
 }
 
@@ -224,10 +224,10 @@ async function upgradeCompilerWithEmoji(): Promise<void> {
 
 	emojiLoaded = true;
 	console.log('[Typst] Upgrading compiler with emoji fonts...');
-	
+
 	const newCompiler = await createCompilerWithFonts(getCurrentFonts());
 	compilerPromise = Promise.resolve(newCompiler);
-	
+
 	console.log('[Typst] Emoji fonts loaded successfully');
 }
 
@@ -239,10 +239,10 @@ async function upgradeCompilerWithCJK(): Promise<void> {
 
 	cjkLoaded = true;
 	console.log('[Typst] Upgrading compiler with CJK fonts...');
-	
+
 	const newCompiler = await createCompilerWithFonts(getCurrentFonts());
 	compilerPromise = Promise.resolve(newCompiler);
-	
+
 	console.log('[Typst] CJK fonts loaded successfully');
 }
 
@@ -274,25 +274,25 @@ async function reinitializeWithCustomFonts(
 	customFontPaths: string[]
 ): Promise<void> {
 	console.log('[Typst] Reinitializing compiler with custom fonts:', customFontPaths);
-	
+
 	// Convert custom font data to data URLs
-	const customFontUrls = customFontPaths.map(path => 
+	const customFontUrls = customFontPaths.map(path =>
 		fontDataToUrl(images[path], path)
 	);
-	
+
 	// Combine all fonts: core + optional (emoji/cjk) + custom
 	const allFonts = [
 		...getCurrentFonts(),
 		...customFontUrls
 	];
-	
+
 	// Create new compiler with all fonts
 	const newCompiler = await createCompilerWithFonts(allFonts);
 	compilerPromise = Promise.resolve(newCompiler);
-	
+
 	// Track loaded custom fonts
 	customFontPaths.forEach(path => loadedCustomFonts.add(path));
-	
+
 	console.log('[Typst] Custom fonts loaded successfully');
 }
 
@@ -312,7 +312,7 @@ async function compilePdf(
 	// Check for custom fonts in uploaded files
 	const customFontPaths = detectCustomFonts(images);
 	const hasNewCustomFonts = customFontPaths.some(path => !loadedCustomFonts.has(path));
-	
+
 	// If new custom fonts are detected, reinitialize compiler
 	if (hasNewCustomFonts) {
 		await reinitializeWithCustomFonts(images, customFontPaths);
@@ -320,19 +320,19 @@ async function compilePdf(
 
 	// Check content for special font requirements and upgrade compiler if needed
 	const allContent = Object.values(files).join('\n');
-	
+
 	// Lazy load emoji fonts (only if no custom fonts were just loaded)
 	if (!hasNewCustomFonts && needsEmojiFont(allContent)) {
 		await upgradeCompilerWithEmoji();
 	}
-	
+
 	// Lazy load CJK fonts (only if no custom fonts were just loaded)
 	if (!hasNewCustomFonts && needsCJKFont(allContent)) {
 		await upgradeCompilerWithCJK();
 	}
 
 	const compiler = await getCompiler();
-	
+
 	// Add all source files to the virtual file system
 	for (const [path, content] of Object.entries(files)) {
 		// Ensure paths start with /
@@ -358,13 +358,13 @@ async function compilePdf(
 
 	// Process diagnostics
 	const diagnostics = (result.diagnostics ?? []).map(String);
-	
+
 	// Enhanced error reporting
 	if (!result.result) {
-		const errorMessage = diagnostics.length > 0 
+		const errorMessage = diagnostics.length > 0
 			? diagnostics.join('\n')
 			: 'Typst compilation failed with no diagnostic information';
-		
+
 		console.error('[Typst] Compilation failed:', errorMessage);
 		throw new Error(errorMessage);
 	}
