@@ -66,7 +66,9 @@ async function run() {
     });
 
     console.log('> Loading page...');
-    await page.goto(BASE, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 15000 });
+    // Wait a moment for React to hydrate
+    await page.waitForTimeout(2000);
 
     const title = await page.title();
     console.log(`> Title: "${title}"`);
